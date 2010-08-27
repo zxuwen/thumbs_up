@@ -75,15 +75,19 @@ module ThumbsUp #:nodoc:
       def vote(voteable, options = {})
         raise ArgumentError "you must specify :up or :down in order to vote" unless options[:direction] && [:up, :down].include?(options[:direction].to_sym)
         if options[:exclusive]
-          Vote.where(
-            :voter_id => self.id,
-            :voter_type => self.class.name,
-            :voteable_id => voteable.id,
-            :voteable_type => voteable.class.name
-          ).map(&:destroy)
+          self.clear_votes(voteable)
         end
         direction = (options[:direction].to_sym == :up ? true : false)
         Vote.create!(:vote => direction, :voteable => voteable, :voter => self)
+      end
+
+      def clear_votes(voteable)
+        Vote.where(
+          :voter_id => self.id,
+          :voter_type => self.class.name,
+          :voteable_id => voteable.id,
+          :voteable_type => voteable.class.name
+        ).map(&:destroy)
       end
 
       def voted_which_way?(voteable, direction)
