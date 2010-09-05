@@ -9,6 +9,8 @@ module ThumbsUp #:nodoc:
       def acts_as_voter
 
         # If a voting entity is deleted, keep the votes.
+        # If you want to nullify (and keep the votes), you'll need to remove
+        # the unique constraint on the [ voter, voteable ] index in the database.
         # has_many :votes, :as => :voter, :dependent => :nullify
         # Destroy votes when a user is deleted.
         has_many :votes, :as => :voter, :dependent => :destroy
