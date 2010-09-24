@@ -79,7 +79,7 @@ module ThumbsUp #:nodoc:
         if options[:exclusive]
           self.clear_votes(voteable)
         end
-        direction = (options[:direction].to_sym == :up ? true : false)
+        direction = (options[:direction].to_sym == :up)
         Vote.create!(:vote => direction, :voteable => voteable, :voter => self)
       end
 
