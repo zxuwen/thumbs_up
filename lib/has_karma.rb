@@ -13,7 +13,7 @@ module ThumbsUp #:nodoc:
         include ThumbsUp::Karma::InstanceMethods
         extend  ThumbsUp::Karma::SingletonMethods
         self.karmic_objects ||= {}
-        self.karmic_objects[voteable_type.to_s.classify.constantize] = [ (options[:as] ? options[:as].to_s.foreign_key : self.name.foreign_key), (options[:weight] ? options[:weight] : 1).to_f ]
+        self.karmic_objects[voteable_type.to_s.classify.constantize] = [ (options[:as] ? options[:as].to_s.foreign_key : self.name.foreign_key), (options[:weight] || 1).to_f ]
       end
     end
 
