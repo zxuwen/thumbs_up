@@ -39,15 +39,24 @@ module ThumbsUp
         # We join so that you can order by columns on the voteable model.
         t = t.joins("LEFT OUTER JOIN #{Vote.table_name} ON #{self.table_name}.#{self.primary_key} = #{Vote.table_name}.voteable_id")
         
-        t = t.having("#{vote_count} > 0")
         t = t.group("#{Vote.table_name}.voteable_id, #{column_names_for_tally}")
         t = t.limit(options[:limit]) if options[:limit]
         t = t.where("#{Vote.table_name}.created_at >= ?", options[:start_at]) if options[:start_at]
         t = t.where("#{Vote.table_name}.created_at <= ?", options[:end_at]) if options[:end_at]
         t = t.where(options[:conditions]) if options[:conditions]
         t = options[:order] ? t.order(options[:order]) : t.order("#{vote_count} DESC")
-        t = t.having(["#{vote_count} >= ?", options[:at_least]]) if options[:at_least]
-        t = t.having(["#{vote_count} <= ?", options[:at_most]]) if options[:at_most]
+        
+        # I haven't been able to confirm this bug yet, but Arel (2.0.7) currently blows up
+        # with multiple 'having' clauses. So we hack them all into one for now.
+        # If you have a more elegant solution, a pull request on Github would be greatly appreciated.
+        t = t.having([
+            "#{vote_count} > 0",
+            (options[:at_least] ? "#{vote_count} >= #{sanitize(options[:at_least])}" : nil),
+            (options[:at_most] ? "#{vote_count} <= #{sanitize(options[:at_most])}" : nil)
+            ].compact.join(' AND '))
+        # t = t.having("#{vote_count} > 0")
+        # t = t.having(["#{vote_count} >= ?", options[:at_least]]) if options[:at_least]
+        # t = t.having(["#{vote_count} <= ?", options[:at_most]]) if options[:at_most]
         t.select("#{self.table_name}.*, COUNT(#{Vote.table_name}.voteable_id) AS vote_count")
       end
 
