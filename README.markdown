@@ -65,7 +65,7 @@ Usage
     voter.vote(voteable, vote) 	# Adds either a +1 or -1 vote: vote => true (+1), vote => false (-1)
 
     voter.vote_exclusively_for(voteable)	# Removes any previous votes by that particular voter, and votes for.
-    voter.vote_exclusively_for(voteable)	# Removes any previous votes by that particular voter, and votes against.
+    voter.vote_exclusively_against(voteable)	# Removes any previous votes by that particular voter, and votes against.
 
 ### Querying votes
 
