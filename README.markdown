@@ -123,6 +123,9 @@ ThumbsUp by default only allows one vote per user. This can be changed by removi
 
     add_index :votes, ["voter_id", "voter_type", "voteable_id", "voteable_type"], :unique => true, :name => "uniq_one_vote_only"
 
+You can also use `--unique-voting false` when running the generator command:
+
+    rails generate thumbs_up --unique-voting false
 
 Credits
 =======
