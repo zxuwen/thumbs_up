@@ -50,4 +50,38 @@ class TestThumbsUp < Test::Unit::TestCase
     assert_not_nil user_for.vote_exclusively_against(item)
     assert_equal true, user_for.voted_against?(item)
   end
+  
+  def test_acts_as_voteable_instance_methods
+    user_for = User.create(:name => 'david')
+    another_user_for = User.create(:name => 'name')
+    user_against = User.create(:name => 'brady')
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+
+    user_for.vote_for(item)
+    another_user_for.vote_for(item)
+    
+    assert_equal 2, item.votes_for
+    assert_equal 0, item.votes_against
+    assert_equal 2, item.plusminus
+
+    user_against.vote_against(item)
+    
+    assert_equal 1, item.votes_against
+    assert_equal 1, item.plusminus
+    
+    assert_equal 3, item.votes_count
+    
+    voters_who_voted = item.voters_who_voted
+    assert_equal 3, voters_who_voted.size    
+    assert voters_who_voted.include?(user_for)
+    assert voters_who_voted.include?(another_user_for)
+    assert voters_who_voted.include?(user_against)
+    
+    non_voting_user = User.create(:name => 'random')
+    
+    assert_equal true, item.voted_by?(user_for)
+    assert_equal true, item.voted_by?(another_user_for)
+    assert_equal true, item.voted_by?(user_against)
+    assert_equal false, item.voted_by?(non_voting_user)
+  end
 end
