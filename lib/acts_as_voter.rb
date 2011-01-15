@@ -75,7 +75,7 @@ module ThumbsUp #:nodoc:
       end
 
       def vote(voteable, options = {})
-        raise ArgumentError "you must specify :up or :down in order to vote" unless options[:direction] && [:up, :down].include?(options[:direction].to_sym)
+        raise ArgumentError, "you must specify :up or :down in order to vote" unless options[:direction] && [:up, :down].include?(options[:direction].to_sym)
         if options[:exclusive]
           self.clear_votes(voteable)
         end
