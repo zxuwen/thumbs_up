@@ -49,5 +49,96 @@ class TestThumbsUp < Test::Unit::TestCase
 
     assert_not_nil user_for.vote_exclusively_against(item)
     assert_equal true, user_for.voted_against?(item)
+    
+    user_for.clear_votes(item)
+    assert_equal 0, user_for.vote_count
+    
+    user_against.clear_votes(item)
+    assert_equal 0, user_against.vote_count
+    
+    assert_raises(ArgumentError) do
+      user_for.vote(item, {:direction => :foo})
+    end
+  end
+  
+  def test_acts_as_voteable_instance_methods
+    user_for = User.create(:name => 'david')
+    another_user_for = User.create(:name => 'name')
+    user_against = User.create(:name => 'brady')
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+
+    user_for.vote_for(item)
+    another_user_for.vote_for(item)
+    
+    assert_equal 2, item.votes_for
+    assert_equal 0, item.votes_against
+    assert_equal 2, item.plusminus
+
+    user_against.vote_against(item)
+    
+    assert_equal 1, item.votes_against
+    assert_equal 1, item.plusminus
+    
+    assert_equal 3, item.votes_count
+    
+    voters_who_voted = item.voters_who_voted
+    assert_equal 3, voters_who_voted.size    
+    assert voters_who_voted.include?(user_for)
+    assert voters_who_voted.include?(another_user_for)
+    assert voters_who_voted.include?(user_against)
+    
+    non_voting_user = User.create(:name => 'random')
+    
+    assert_equal true, item.voted_by?(user_for)
+    assert_equal true, item.voted_by?(another_user_for)
+    assert_equal true, item.voted_by?(user_against)
+    assert_equal false, item.voted_by?(non_voting_user)
+  end
+  
+  def test_tally_empty
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    
+    assert_equal 0, Item.tally.length
+  end
+  
+  def test_tally_starts_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 3.days.ago
+    vote.save
+    
+    assert_equal 0, Item.tally(:start_at => 2.days.ago).length
+    assert_equal 1, Item.tally(:start_at => 4.days.ago).length
+  end
+
+  def test_tally_end_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 3.days.from_now
+    vote.save
+    
+    assert_equal 0, Item.tally(:end_at => 2.days.from_now).length
+    assert_equal 1, Item.tally(:end_at => 4.days.from_now).length
+  end
+  
+  def test_tally_between_start_at_end_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    another_item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 2.days.ago
+    vote.save
+    
+    vote = user.vote_for(another_item)
+    vote.created_at = 3.days.from_now
+    vote.save
+    
+    assert_equal 1, Item.tally(:start_at => 3.days.ago, :end_at => 2.days.from_now).length
+    assert_equal 2, Item.tally(:start_at => 3.days.ago, :end_at => 4.days.from_now).length
   end
 end
