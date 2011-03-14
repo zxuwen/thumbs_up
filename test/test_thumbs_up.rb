@@ -141,4 +141,86 @@ class TestThumbsUp < Test::Unit::TestCase
     assert_equal 1, Item.tally(:start_at => 3.days.ago, :end_at => 2.days.from_now).length
     assert_equal 2, Item.tally(:start_at => 3.days.ago, :end_at => 4.days.from_now).length
   end
+  
+  def test_rank_tally_empty
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    
+    assert_equal 0, Item.rank_tally.length
+  end
+  
+  def test_rank_tally_starts_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 3.days.ago
+    vote.save
+    
+    assert_equal 0, Item.rank_tally(:start_at => 2.days.ago).length
+    assert_equal 1, Item.rank_tally(:start_at => 4.days.ago).length
+  end
+
+  def test_rank_tally_end_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 3.days.from_now
+    vote.save
+    
+    assert_equal 0, Item.rank_tally(:end_at => 2.days.from_now).length
+    assert_equal 1, Item.rank_tally(:end_at => 4.days.from_now).length
+  end
+  
+  def test_rank_tally_between_start_at_end_at
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    another_item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user = User.create(:name => 'david')
+    
+    vote = user.vote_for(item)
+    vote.created_at = 2.days.ago
+    vote.save
+    
+    vote = user.vote_for(another_item)
+    vote.created_at = 3.days.from_now
+    vote.save
+    
+    assert_equal 1, Item.rank_tally(:start_at => 3.days.ago, :end_at => 2.days.from_now).length
+    assert_equal 2, Item.rank_tally(:start_at => 3.days.ago, :end_at => 4.days.from_now).length
+  end
+  
+  def test_rank_tally_inclusion
+    user = User.create(:name => 'david')
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    item_not_included = Item.create(:name => 'Playstation', :description => 'Playstation console')
+    
+    assert_not_nil user.vote_for(item)
+    
+    assert (Item.rank_tally.include? item)
+    assert (not Item.rank_tally.include? item_not_included)
+  end
+  
+  def test_rank_tally_default_ordering
+    user = User.create(:name => 'david')
+    item_for = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    item_against = Item.create(:name => 'Playstation', :description => 'Playstation console')
+    
+    assert_not_nil user.vote_for(item_for)
+    assert_not_nil user.vote_against(item_against)
+    
+    assert_equal item_for, Item.rank_tally[0]
+    assert_equal item_against, Item.rank_tally[1]
+  end
+  
+  def test_rank_tally_ascending_ordering
+    user = User.create(:name => 'david')
+    item_for = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    item_against = Item.create(:name => 'Playstation', :description => 'Playstation console')
+    
+    assert_not_nil user.vote_for(item_for)
+    assert_not_nil user.vote_against(item_against)
+    
+    assert_equal item_for, Item.rank_tally(:ascending => true)[1]
+    assert_equal item_against, Item.rank_tally(:ascending => true)[0]
+  end
 end
