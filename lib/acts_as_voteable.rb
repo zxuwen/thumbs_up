@@ -59,8 +59,7 @@ module ThumbsUp
         t = t.where("joined_#{Vote.table_name}.created_at >= ?", options[:start_at]) if options[:start_at]
         t = t.where("joined_#{Vote.table_name}.created_at <= ?", options[:end_at]) if options[:end_at]
         t = t.where(options[:conditions]) if options[:conditions]
-        t = options[:ascending] ? t.order("joined_#{Vote.table_name}.Vote_Total")
-	                                  : t.order("joined_#{Vote.table_name}.Vote_Total DESC")
+        t = options[:ascending] ? t.order("joined_#{Vote.table_name}.Vote_Total") : t.order("joined_#{Vote.table_name}.Vote_Total DESC")
 			  
         t = t.having(["COUNT(joined_#{Vote.table_name}.voteable_id) > 0",
 	        (options[:at_least] ? "joined_votes.Vote_Total >= #{sanitize(options[:at_least])}" : nil),
