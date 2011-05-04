@@ -102,7 +102,17 @@ module ThumbsUp #:nodoc:
               :voteable_type => voteable.class.name
             ).count
       end
-
+      
+      # Allows users to 'destroy' votes, if they have voted in one direction
+      # E.g. if a user upvotes one item, a downvote will 'neutralize' the upvote
+      def vote_with_neutral(voteable, direction)
+	if self.voted_which_way?(voteable, direction == "up" ? :down : :up) == true
+	  self.clear_votes(voteable)
+	else
+	  self.vote(voteable, {:direction => direction.to_sym, :exclusive => true})
+	end
+      end
+      
     end
   end
 end

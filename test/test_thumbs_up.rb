@@ -226,4 +226,21 @@ class TestThumbsUp < Test::Unit::TestCase
     assert_equal item_for, Item.rank_tally(:ascending => true)[1]
     assert_equal item_against, Item.rank_tally(:ascending => true)[0]
   end
+  
+  # To test the vote_with_neutral instance method
+  def test_vote_with_neutral
+    user = User.create(:name => 'david')
+    item = Item.create(:name => 'XBOX', :description => 'XBOX console')
+    user.vote_with_neutral(item, "up")
+    assert_equal item.plusminus, 1
+    user.vote_with_neutral(item, "down")
+    assert_equal item.plusminus, 0
+    user.vote_with_neutral(item, "down")
+    assert_equal item.plusminus, -1
+    user.vote_with_neutral(item, "down")
+    assert_equal item.plusminus, -1
+    user.vote_with_neutral(item, "up")
+    assert_equal item.plusminus, 0
+  end
+  
 end
