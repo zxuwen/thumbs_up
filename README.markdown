@@ -1,8 +1,17 @@
+Forked from https://github.com/brady8/thumbs_up, with additional method "vote_with_neutral" to allow users to "neutralize" a vote.
+
+### How to use:
+voter.vote_with_neutral(voteable, "up") # Adds a +1 vote
+voter.vote_with_neutral(voteable, "down") # Adds a -1 vote
+
+Rest of documentation from brady8 below:
+
 ThumbsUp
 =======
 
 A ridiculously straightforward and simple package 'o' code to enable voting in your application, a la stackoverflow.com, etc.
 Allows an arbitrary number of entities (users, etc.) to vote on models.
+
 
 ### Mixins
 This plugin introduces three mixins to your recipe book:
